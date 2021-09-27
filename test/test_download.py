@@ -13,7 +13,7 @@ try:
     hasaio = True
 except ImportError:
     hasaio = False
-needaio = pytest.mark.skipif(hasaio, reason='aiohttp not installed')
+needaio = pytest.mark.skipif(not hasaio, reason='aiohttp not installed')
 
 
 def setup():
