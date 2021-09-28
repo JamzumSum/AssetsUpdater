@@ -1,7 +1,7 @@
 from pathlib import Path
 
 import pytest
-import updater
+import updater.utils as updater
 from updater.download import adownload, download
 from updater.github import GhUpdater, Repo
 

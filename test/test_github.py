@@ -1,24 +1,24 @@
 import pytest
 from updater import github
 
-repo = None
+up = None
 
 
 def setup_module():
     # github.register_proxy({'https': 'http://127.0.0.1:7890'})
-    global repo
-    repo = github.Repo('JamzumSum', 'QzEmoji')
+    global up
+    up = github.GhUpdater(github.Repo('JamzumSum', 'QzEmoji'))
 
 
 def test_latest():
-    r = github.GhUpdater(repo).latest()
+    r = up.latest()
     assert r
     assert r.tag
     assert r.title
 
 
 def test_asset():
-    r = github.GhUpdater(repo).latest()
+    r = up.latest()
     a = r.assets()
     assert a
     f = list(filter(lambda i: i.name == 'emoji.db', a))
@@ -29,5 +29,5 @@ def test_asset():
 
 
 def test_all():
-    r = github.GhUpdater(repo).all(None, True)
+    r = up.all(None, True)
     assert r
