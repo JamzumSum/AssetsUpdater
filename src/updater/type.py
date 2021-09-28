@@ -10,6 +10,9 @@ class Asset:
     name: str
     download_url: str
 
+    def __repr__(self) -> str:
+        return self.name
+
 
 class Release(ABC):
     @abstractproperty
@@ -32,6 +35,10 @@ class Release(ABC):
         for i in self.assets():
             if i.name == name: return True
         return False
+
+    def __repr__(self) -> str:
+        tag = f"<{self.tag}> " if self.tag else ''
+        return tag + self.title
 
 
 Pred = Callable[[Release], bool]

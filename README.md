@@ -75,15 +75,29 @@ Python type annotation is fully supported.
 ### Filter Tags using Regex
 
 ~~~ python
-> from updater import tag_filter
+> from updater.utils import tag_filter
 > from updater.github import GhUpdater, Repo
 > up = GhUpdater(Repo(user, reponame))
-> beta = tag_filter(up, r"[\d\.]+b\d+.*", num=3, pre=True)   # include pre-release; limited to the first 3 results
-> beta
-['0.1.2b2.dev1', '0.1.2b1', '0.1.1b1']
+  # include pre-release; limited to the first 3 results
+> relist = tag_filter(up, r"[\d\.]+b\d+.*", num=3, pre=True)
+> list(relist)
+  # 3 release object which has human-friendly __repr__
+[<0.1.2> 0.1.2, <0.1.1> 0.1.1.dev1, <0.1.0> 0.1.0.dev1]
 ~~~
 
 > You can filter by release name as well. If regex is not enough, iterate on releases and filter by yourself is certainly supported.
+
+### Filter with Version
+
+~~~ python
+> from updater.utils import version_filter
+> from updater.github import GhUpdater, Repo
+> up = GhUpdater(Repo(user, reponame))
+  # try to parse version from release title; skip instead of raise InvalidVersion if a tag doesn't confirm PEP440
+> relist = version_filter(up, '0.1.0', num=3, pre=True, try_title=True, skip_legacy=True)   
+> list(relist)
+[<0.1.2> 0.1.2, <0.1.1> 0.1.1.dev1, <0.1.0> 0.1.0.dev1]
+~~~
 
 ## Licence
 
