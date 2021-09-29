@@ -7,6 +7,7 @@ Url = str
 
 @dataclass(frozen=True)
 class Asset:
+    from_tag: str
     name: str
     download_url: str
 
@@ -16,7 +17,7 @@ class Asset:
 
 class Release(ABC):
     @abstractproperty
-    def tag(self) -> Optional[str]:
+    def tag(self) -> str:
         return ''
 
     @abstractproperty

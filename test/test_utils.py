@@ -7,11 +7,11 @@ up = None
 
 def setup_module():
     global up
-    up = GhUpdater(Repo('JamzumSum', 'QzEmoji'))
+    up = GhUpdater(Repo('JamzumSum', 'AssetsUpdater'))
 
 
 def test_latest_asset():
-    url = updater.get_latest_asset(up, 'emoji.db')
+    url = updater.get_latest_asset(up, 'AssetsUpdater-0.1.tar.gz')
     assert url.download_url
 
 

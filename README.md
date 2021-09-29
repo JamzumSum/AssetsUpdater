@@ -32,6 +32,8 @@ pip install AssetsUpdater[async]@https://github.com/JamzumSum/AssetsUpdater.git
 
 Python type annotation is fully supported.
 
+<details>
+
 **Updater**
 
 > Only GitHub updater is implemented now.
@@ -53,6 +55,9 @@ Python type annotation is fully supported.
 `Asset` has:
 - name
 - download_url
+- from_tag
+
+</details>
 
 ## API and Examples
 
@@ -94,7 +99,7 @@ Python type annotation is fully supported.
 > from updater.github import GhUpdater, Repo
 > up = GhUpdater(Repo(user, reponame))
   # try to parse version from release title; skip instead of raise InvalidVersion if a tag doesn't confirm PEP440
-> relist = version_filter(up, '0.1.0', num=3, pre=True, try_title=True, skip_legacy=True)   
+> relist = version_filter(up, '0.0.1', num=3, pre=True, try_title=True, skip_legacy=True)   
 > list(relist)
 [<0.1.2> 0.1.2, <0.1.1> 0.1.1.dev1, <0.1.0> 0.1.0.dev1]
 ~~~

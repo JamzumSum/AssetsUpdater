@@ -24,7 +24,6 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip pytest
-          export PYTHONPATH=$(pwd)/src
           python -m pip install -e .[async]
 
       - name: Test with pytest

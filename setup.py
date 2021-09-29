@@ -1,6 +1,7 @@
 from setuptools import find_packages, setup
 
-from updater import __version__
+with open('src/updater/VERSION') as f:
+    __version__ = f.read()
 
 NAME = 'AssetsUpdater'
 LOWER_NAME = NAME.lower()

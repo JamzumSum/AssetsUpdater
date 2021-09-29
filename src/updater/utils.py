@@ -70,4 +70,3 @@ __all__ = [i.__name__ for i in [
     tag_filter,
     name_filter,
 ]]
-
