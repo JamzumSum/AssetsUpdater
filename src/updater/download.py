@@ -7,7 +7,7 @@ import requests
 from .type import Url
 
 
-def download(url: Url, local: Union[str, Path], buffer=8192, **kwargs):
+def download(url: Url, local: Union[str, Path], buffer: int = 8192, **kwargs):
     if isinstance(local, str): local = Path(local)
     local.parent.mkdir(parents=True, exist_ok=True)
     r = requests.get(url, stream=True, **kwargs)
@@ -26,7 +26,7 @@ async def aaccint(it: AsyncIterable[int]):
 async def adownload(
     url: Url,
     local: Union[str, Path],
-    buffer=8192,
+    buffer: int = 8192,
     acc_callback: Callable[[int], None] = None,
     **kwargs
 ):

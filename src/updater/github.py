@@ -48,9 +48,16 @@ class GhRelease(Release):
 class GhUpdater(Updater):
     def __init__(self, repo: Union[Repo, Url]) -> None:
         super().__init__()
-        self.url = repo if isinstance(
-            repo, Url
-        ) else f"https://api.github.com/repos/{repo.user}/{repo.repo}/releases"
+        if isinstance(repo, Url):
+            import re
+            m = re.search(r'github.com/(?:repos/)?(\w+)/(\w+)', repo)
+            if not m: raise ValueError("Cannot parse " + repo)
+            repo = Repo(user=m.group(1), repo=m.group(2))
+
+        if not isinstance(repo, Repo):
+            raise TypeError(repo)
+
+        self.url = f"https://api.github.com/repos/{repo.user}/{repo.repo}/releases"
 
     def all_iter(self, num=None, pre=False):
         header = {

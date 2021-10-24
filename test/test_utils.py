@@ -2,24 +2,22 @@ import pytest
 import updater.utils as updater
 from updater.github import GhUpdater, Repo
 
-up = None
+
+@pytest.fixture(scope='module')
+def up():
+    return GhUpdater(Repo('JamzumSum', 'AssetsUpdater'))
 
 
-def setup_module():
-    global up
-    up = GhUpdater(Repo('JamzumSum', 'AssetsUpdater'))
-
-
-def test_latest_asset():
+def test_latest_asset(up):
     url = updater.get_latest_asset(up, 'AssetsUpdater-0.1.tar.gz')
     assert url.download_url
 
 
-def test_latest_asset_FN():
+def test_latest_asset_FN(up):
     pytest.raises(FileNotFoundError, updater.get_latest_asset, up, 'QAQ')
 
 
-def test_version_filter():
-    rels = updater.version_filter(up, '0.0.1', num=3, pre=True)
+def test_version_filter(up):
+    rels = updater.version_filter(up, '>=0.0.1', num=3, pre=True)
     rels = list(rels)
     assert rels

@@ -1,23 +1,21 @@
 import pytest
 from updater import github
 
-up = None
 
-
-def setup_module():
+@pytest.fixture(scope='module')
+def up():
     # github.register_proxy({'https': 'http://127.0.0.1:7890'})
-    global up
-    up = github.GhUpdater(github.Repo('JamzumSum', 'QzEmoji'))
+    return github.GhUpdater(github.Repo('JamzumSum', 'QzEmoji'))
 
 
-def test_latest():
+def test_latest(up):
     r = up.latest()
     assert r
     assert r.tag
     assert r.title
 
 
-def test_asset():
+def test_asset(up):
     r = up.latest()
     a = r.assets()
     assert a
@@ -28,6 +26,6 @@ def test_asset():
     assert a.download_url
 
 
-def test_all():
+def test_all(up):
     r = up.all(None, True)
     assert r
