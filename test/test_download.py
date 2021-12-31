@@ -45,3 +45,4 @@ def test_adownload(url, local):
     import asyncio
     loop = asyncio.get_event_loop()
     loop.run_until_complete(adownload(url, local))
+z

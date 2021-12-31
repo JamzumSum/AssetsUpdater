@@ -16,10 +16,25 @@ class Repo:
     repo: str
 
 
-def register_proxy(proxy: dict):
+def register_proxy(proxy: dict, auth: dict = None):
     global PROXY
-    PROXY = proxy.copy()
-    return proxy
+    if auth is None:
+        PROXY = proxy.copy()
+        return proxy
+
+    assert 'username' in auth
+    assert 'password' in auth
+    from urllib.parse import urlsplit
+    PROXY = {}
+
+    for k in proxy:
+        p = urlsplit(proxy[k])
+        assert p.hostname
+        url = f"{p.scheme}://{auth['username']}:{auth['password']}@{p.hostname}"
+        if p.port: url += f":{p.port}"
+        PROXY[k] = url
+
+    return PROXY
 
 
 class GhRelease(Release):
@@ -31,10 +46,7 @@ class GhRelease(Release):
         return self.raw['prerelease']
 
     def assets(self):
-        return [
-            Asset(self.tag, i['name'], i['browser_download_url'])
-            for i in self.raw['assets']
-        ]
+        return [Asset(self.tag, i['name'], i['browser_download_url']) for i in self.raw['assets']]
 
     @property
     def title(self) -> str:
