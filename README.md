@@ -4,7 +4,7 @@ Update assets from network. This repo is a component of [QzEmoji][qzemoji].
 
 <div>
 
-<img src="https://img.shields.io/badge/python-3.8%2F3.9-blue">
+<img src="https://img.shields.io/badge/python-3.9-blue">
 
 <a href="https://github.com/JamzumSum/AssetsUpdater/actions/workflows/test.yml">
 <img src="https://github.com/JamzumSum/AssetsUpdater/actions/workflows/test.yml/badge.svg">
