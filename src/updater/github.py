@@ -16,25 +16,32 @@ class Repo:
     repo: str
 
 
-def register_proxy(proxy: dict, auth: dict = None):
+def register_proxy(proxy: str, auth: dict = None):
+    """Build up a https proxy dict of `request` format
+
+    Args:
+        proxy (str): proxy url, socks5 supoorted
+        auth (dict, optional): auth dict. Needs `username` and `password` field. Defaults to None.
+
+    Returns:
+        dict: `{'https': proxy_with_auth}`
+    """    
     global PROXY
     if auth is None:
-        PROXY = proxy.copy()
-        return proxy
+        PROXY = {'https': proxy}
+        return PROXY.copy()
 
     assert 'username' in auth
     assert 'password' in auth
     from urllib.parse import urlsplit
-    PROXY = {}
 
-    for k in proxy:
-        p = urlsplit(proxy[k])
-        assert p.hostname
-        url = f"{p.scheme}://{auth['username']}:{auth['password']}@{p.hostname}"
-        if p.port: url += f":{p.port}"
-        PROXY[k] = url
+    p = urlsplit(proxy)
+    assert p.hostname
+    url = f"{p.scheme}://{auth['username']}:{auth['password']}@{p.hostname}"
+    if p.port: url += f":{p.port}"
+    PROXY = {'https': url}
 
-    return PROXY
+    return PROXY.copy()
 
 
 class GhRelease(Release):
