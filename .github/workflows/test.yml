@@ -40,8 +40,5 @@ jobs:
       #    add matrix specifics and run test suite
       #----------------------------------------------
       - name: Test with pytest
-        env:
-          TEST_UIN: ${{ secrets.TEST_UIN }}
-          TEST_PASSWORD: ${{ secrets.TEST_PASSWORD }}
         run: |
           poetry run pytest test
