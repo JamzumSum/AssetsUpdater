@@ -1,8 +1,11 @@
-from abc import ABC, abstractmethod, abstractproperty
+from abc import ABC
+from abc import abstractmethod
+from abc import abstractproperty
 from dataclasses import dataclass
-from typing import Generator, List, Optional, Callable
+from typing import Callable, Generator, List, Optional
 
 Url = str
+Pred = Callable[["Release"], bool]
 
 
 @dataclass(frozen=True)
@@ -18,11 +21,11 @@ class Asset:
 class Release(ABC):
     @abstractproperty
     def tag(self) -> str:
-        return ''
+        return ""
 
     @abstractproperty
     def title(self) -> str:
-        return ''
+        return ""
 
     @abstractmethod
     def assets(self) -> List[Asset]:
@@ -32,32 +35,29 @@ class Release(ABC):
     def pre(self) -> bool:
         return False
 
-    def has_asset(self, name):
+    def has_asset(self, name: str):
         for i in self.assets():
-            if i.name == name: return True
+            if i.name == name:
+                return True
         return False
 
     def __repr__(self) -> str:
-        tag = f"<{self.tag}> " if self.tag else ''
+        tag = f"<{self.tag}> " if self.tag else ""
         return tag + self.title
-
-
-Pred = Callable[[Release], bool]
 
 
 class Updater(ABC):
     @abstractmethod
-    def latest(self, pre=False) -> Optional[Release]:
+    def latest(self, pre: bool = False) -> Optional[Release]:
         return
 
     @abstractmethod
-    def all_iter(self, num, pre=False) -> Generator[Release, None, None]:
-        yield
+    def all_iter(self, num: Optional[int], pre: bool = False) -> Generator[Release, None, None]:
+        pass
 
-    def all(self, num, pre=False) -> List[Release]:
+    def all(self, num: Optional[int], pre: bool = False) -> List[Release]:
         return list(self.all_iter(num, pre))
 
-    def filter(self, pred: Pred, pre=False):
-        """Hint: Use `itertools.islice` to limit number
-        """
+    def filter(self, pred: Pred, pre: bool = False):
+        """Hint: Use `itertools.islice` to limit number"""
         return filter(pred, self.all(None, pre))
