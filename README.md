@@ -2,19 +2,10 @@
 
 Update assets from network. This repo is a component of [QzEmoji][qzemoji].
 
-<div>
+[![python](https://img.shields.io/badge/python-%E2%89%A53.7%2C%3C4.0-blue)][homepage]
+[![Test](https://github.com/JamzumSum/AssetsUpdater/actions/workflows/test.yml/badge.svg)](https://github.com/JamzumSum/AssetsUpdater/actions/workflows/test.yml)
+[![Release](https://img.shields.io/github/v/release/JamzumSum/AssetsUpdater?include_prereleases&logo=github)](https://github.com/JamzumSum/AssetsUpdater/releases)
 
-<img src="https://img.shields.io/badge/python-3.9-blue">
-
-<a href="https://github.com/JamzumSum/AssetsUpdater/actions/workflows/test.yml">
-<img src="https://github.com/JamzumSum/AssetsUpdater/actions/workflows/test.yml/badge.svg">
-</a>
-
-<a href="https://github.com/JamzumSum/AssetsUpdater/releases">
-<img src="https://img.shields.io/github/v/release/JamzumSum/AssetsUpdater?include_prereleases&logo=github">
-</a>
-
-</div>
 
 ## Install
 
@@ -22,52 +13,21 @@ Update assets from network. This repo is a component of [QzEmoji][qzemoji].
 pip install AssetsUpdater@https://github.com/JamzumSum/AssetsUpdater.git
 ~~~
 
-For supporting async download: 
+For supporting async-download:
 
 ~~~ shell
 pip install AssetsUpdater[async]@https://github.com/JamzumSum/AssetsUpdater.git
 ~~~
 
-## Types
-
-Python type annotation is fully supported.
-
-<details>
-
-**Updater**
-
-> Only GitHub updater is implemented now.
-
-`Updater` can:
-- iterate all releases
-- get latest release
-
-**Release**
-
-`Release` has:
-- `tag`, `name`...
-
-`Release` can:
-- list all assets
-
-**Assets**
-
-`Asset` has:
-- name
-- download_url
-- from_tag
-
-</details>
-
-## API and Examples
+## Examples
 
 ### Download Latest Assets
 
 ~~~ python
 > from updater.github import GhUpdater, Repo
 > up = GhUpdater(Repo(user, reponame))
-> url = get_latest_asset(up, 'query.db', pre=False)   
-> url 
+> url = get_latest_asset(up, 'query.db', pre=False)
+> url
 'https://github.com/..../query.db'
 
 > from updater.download import download
@@ -99,7 +59,7 @@ Python type annotation is fully supported.
 > from updater.github import GhUpdater, Repo
 > up = GhUpdater(Repo(user, reponame))
   # try to parse version from release title; skip instead of raise InvalidVersion if a tag doesn't confirm PEP440
-> relist = version_filter(up, '>=0.0.1', num=3, pre=True, try_title=True, skip_legacy=True)   
+> relist = version_filter(up, '>=0.0.1', num=3, pre=True, try_title=True, skip_legacy=True)
 > list(relist)
 [<0.1.2> 0.1.2, <0.1.1> 0.1.1.dev1, <0.1.0> 0.1.0.dev1]
 ~~~
@@ -108,10 +68,6 @@ Python type annotation is fully supported.
 
 - [MIT](https://github.com/JamzumSum/AssetsUpdater/blob/master/LICENSE)
 
-### Third Party
-
-- aiohttp: [Apache-2.0](https://github.com/aio-libs/aiohttp/blob/master/LICENSE.txt)
-- aiofiles: [Apache-2.0](https://github.com/Tinche/aiofiles/blob/master/LICENSE)
-
 
 [qzemoji]: https://github.com/JamzumSum/QzEmoji "Transfer Qzone Emoji to text."
+[homepage]: https://github.com/JamzumSum/AssetsUpdater "Update assets from network."

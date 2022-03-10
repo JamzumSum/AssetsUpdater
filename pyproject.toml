@@ -4,8 +4,10 @@ version = "0.2.2"
 description = "Update assets from network."
 authors = ["JamzumSum <zzzzss990315@gmail.com>"]
 license = "MIT"
+readme = "README.md"
 homepage = "https://github.com/JamzumSum/AssetsUpdater"
 repository = "https://github.com/JamzumSum/AssetsUpdater"
+packages = [{ include = "updater", from = "src" }]
 
 [tool.poetry.dependencies]
 python = ">=3.7,<4.0"
