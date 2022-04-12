@@ -1,23 +1,20 @@
 import pytest
 
-from updater import github
+from updater.github import GhUpdater
+
+pytestmark = pytest.mark.asyncio
 
 
-@pytest.fixture(scope="module")
-def up():
-    # github.register_proxy({'https': 'http://127.0.0.1:7890'})
-    return github.GhUpdater(github.Repo("JamzumSum", "QzEmoji"))
-
-
-def test_latest(up):
-    r = up.latest()
+async def test_latest(up: GhUpdater):
+    r = await up.latest()
     assert r
     assert r.tag
     assert r.title
 
 
-def test_asset(up):
-    r = up.latest()
+async def test_asset(up: GhUpdater):
+    r = await up.latest()
+    assert r
     a = r.assets()
     assert a
     f = list(filter(lambda i: i.name == "emoji.db", a))
@@ -27,6 +24,6 @@ def test_asset(up):
     assert a.download_url
 
 
-def test_all(up):
-    r = up.all(None, True)
+async def test_all(up: GhUpdater):
+    r = await up.all(None, True)
     assert r

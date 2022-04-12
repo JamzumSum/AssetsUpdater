@@ -1,25 +1,23 @@
 import pytest
 
 from updater.github import GhUpdater
-from updater.github import Repo
-import updater.utils as updater
+from updater.utils import get_latest_asset
+from updater.utils import version_filter
+
+pytestmark = pytest.mark.asyncio
 
 
-@pytest.fixture(scope="module")
-def up():
-    return GhUpdater(Repo("JamzumSum", "AssetsUpdater"))
-
-
-def test_latest_asset(up):
-    url = updater.get_latest_asset(up, "AssetsUpdater-0.1.tar.gz")
+async def test_latest_asset(up: GhUpdater):
+    url = await get_latest_asset(up, "emoji.db")
     assert url.download_url
 
 
-def test_latest_asset_FN(up):
-    pytest.raises(FileNotFoundError, updater.get_latest_asset, up, "QAQ")
+@pytest.mark.xfail
+async def test_latest_asset_FN(up):
+    await get_latest_asset(up, "QAQ")
 
 
-def test_version_filter(up):
-    rels = updater.version_filter(up, ">=0.0.1", num=3, pre=True)
-    rels = list(rels)
-    assert rels
+async def test_version_filter(up):
+    rels = version_filter(up, ">=0.0.1", num=3, pre=True)
+    l = [i async for i in rels]
+    assert l

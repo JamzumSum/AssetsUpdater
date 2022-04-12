@@ -2,9 +2,8 @@ from abc import ABC
 from abc import abstractmethod
 from abc import abstractproperty
 from dataclasses import dataclass
-from typing import Callable, Generator, List, Optional
+from typing import AsyncGenerator, Callable, List, Optional
 
-Url = str
 Pred = Callable[["Release"], bool]
 
 
@@ -48,16 +47,17 @@ class Release(ABC):
 
 class Updater(ABC):
     @abstractmethod
-    def latest(self, pre: bool = False) -> Optional[Release]:
+    async def latest(self, pre: bool = False) -> Optional[Release]:
         return
 
     @abstractmethod
-    def all_iter(self, num: Optional[int], pre: bool = False) -> Generator[Release, None, None]:
+    def all_iter(self, num: Optional[int], pre: bool = False) -> AsyncGenerator[Release, None]:
         pass
 
-    def all(self, num: Optional[int], pre: bool = False) -> List[Release]:
-        return list(self.all_iter(num, pre))
+    async def all(self, num: Optional[int], pre: bool = False) -> List[Release]:
+        return [i async for i in self.all_iter(num, pre)]
 
-    def filter(self, pred: Pred, pre: bool = False):
-        """Hint: Use `itertools.islice` to limit number"""
-        return filter(pred, self.all(None, pre))
+    async def filter(self, pred: Pred, pre: bool = False):
+        async for i in self.all_iter(None, pre):
+            if pred(i):
+                yield i

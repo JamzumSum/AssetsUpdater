@@ -1,46 +1,49 @@
-import itertools
+from os import PathLike
 from pathlib import Path
-from typing import Union
+from typing import AsyncGenerator, Awaitable, Callable, Optional
 
-import requests
+import aiofiles
+import aiohttp
+from aiohttp.typedefs import StrOrURL
+from yarl import URL
 
-from .type import Url
-
-__all__ = ["download", "adownload"]
-
-
-def download(url: Url, local: Union[str, Path], buffer: int = 8192, **kwargs):
-    if isinstance(local, str):
-        local = Path(local)
-    local.parent.mkdir(parents=True, exist_ok=True)
-    r = requests.get(url, stream=True, **kwargs)
-    with open(local, "wb") as f:
-        dl_size = (f.write(c) for c in r.iter_content(buffer) if c)
-        yield from itertools.accumulate(dl_size)
+__all__ = ["download"]
 
 
-async def aaccint(it):
+async def aaccint(it: AsyncGenerator[int, None]):
     acc = 0
     async for i in it:
         acc += i
         yield acc
 
 
-async def adownload(
-    url: Url, local: Union[str, Path], buffer: int = 8192, acc_callback=None, **kwargs
+async def download(
+    url: StrOrURL,
+    local: Optional[PathLike] = None,
+    buffer: int = 8192,
+    echo_progress: Optional[Callable[[int], Awaitable]] = None,
+    **get_kw,
 ):
-    import aiofiles
-    import aiohttp
+    """async-download a url to a the given path.
 
-    if isinstance(local, str):
-        local = Path(local)
+    :param local: where to download
+    :param echo_progress: async function to receive downloaded size as a int.
+
+    :return: size
+    """
+    url = url if isinstance(url, URL) else URL(url)
+    local = Path(local or url.name)
     local.parent.mkdir(parents=True, exist_ok=True)
+    assert not local.is_dir(), "destination should not be a directory"
 
-    async with aiohttp.ClientSession() as sess:
-        async with aiofiles.open(local, "wb") as af:
-            async with sess.get(url, **kwargs) as r:
-                ait = r.content.iter_chunked(buffer)
-                dl_size = (await af.write(c) async for c in ait if c)
-                async for i in aaccint(dl_size):
-                    if acc_callback:
-                        acc_callback(i)
+    acc = 0
+    async with aiohttp.ClientSession() as sess, aiofiles.open(local, "wb") as f:
+        async with sess.get(url, **get_kw) as r:
+            it = r.content.iter_chunked(buffer)
+            async for c in it:
+                if c:
+                    acc += await f.write(c)
+                    if echo_progress:
+                        await echo_progress(acc)
+
+    return acc

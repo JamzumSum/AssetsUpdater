@@ -1,6 +1,6 @@
 import itertools
 import re
-from typing import Any, Callable, Generator, Optional, Union
+from typing import Any, AsyncGenerator, Callable, Generator, Optional, Union
 
 from packaging.specifiers import SpecifierSet
 from packaging.version import InvalidVersion
@@ -13,10 +13,11 @@ from .version import parse
 __all__ = ["get_latest_asset", "tag_filter", "name_filter"]
 
 
-def get_latest_asset(updater: Updater, name: str, pre: bool = False):
+async def get_latest_asset(updater: Updater, name: str, pre: bool = False):
     r = updater.filter(lambda r: r.has_asset(name), pre)
-    r = next(r, None)
-    if not r:
+    try:
+        r = await r.__anext__()
+    except StopAsyncIteration:
         raise FileNotFoundError("No release found")
 
     f = next(filter(lambda i: i.name == name, r.assets()), None)
@@ -25,20 +26,27 @@ def get_latest_asset(updater: Updater, name: str, pre: bool = False):
     return f
 
 
-def _pattern_filter(
+async def _pattern_filter(
     updater: Updater,
     pattern: Union[str, re.Pattern],
     ref: Callable[[Release], str],
     num: Optional[int],
     pre=False,
-) -> Generator[Release, Any, Any]:
+) -> AsyncGenerator[Release, None]:
     if isinstance(pattern, str):
         pattern = re.compile(pattern)
     pred = lambda r: pattern.match(ref(r)) is not None
-    yield from itertools.islice(updater.filter(pred, pre=pre), num)
+
+    i = 0
+    async for r in updater.filter(pred, pre=pre):
+        i += 1
+        if num is None or i < num:
+            yield r
+        else:
+            break
 
 
-def version_filter(
+async def version_filter(
     updater: Updater,
     spec: Union[str, SpecifierSet],
     num: Optional[int],
@@ -62,8 +70,12 @@ def version_filter(
         if not skip_legacy:
             raise InvalidVersion(r.tag)
 
-    took = itertools.takewhile(pred, updater.all_iter(None, pre=pre))
-    yield from itertools.islice(took, num)
+    i = 0
+    async for r in updater.all_iter(None, pre=pre):
+        if pred(r):
+            i += 1
+            if num is None or i < num:
+                yield r
 
 
 def tag_filter(updater: Updater, pattern: Union[str, re.Pattern], num, pre=False):

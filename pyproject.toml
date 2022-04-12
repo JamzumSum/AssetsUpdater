@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "AssetsUpdater"
-version = "0.2.2"
+version = "1.0.1.dev1"
 description = "Update assets from network."
 authors = ["JamzumSum <zzzzss990315@gmail.com>"]
 license = "MIT"
@@ -9,30 +9,36 @@ homepage = "https://github.com/JamzumSum/AssetsUpdater"
 repository = "https://github.com/JamzumSum/AssetsUpdater"
 packages = [{ include = "updater", from = "src" }]
 
+[tool.poetry.urls]
+"Bug Tracker" = "https://github.com/JamzumSum/AssetsUpdater/issues"
+
 [tool.poetry.dependencies]
 python = ">=3.7,<4.0"
 packaging = "^21.3"
-requests = "^2.27.1"
-aiohttp = {version = "^3.8.1", optional = true}
-aiofiles = {version = "^0.8.0", optional = true}
+aiohttp = "^3.8.1"
+aiofiles = "^0.8.0"
+pre-commit = {version = "^2.17.0", optional = true}
+black = {version = "^22.1.0", optional = true}
+isort = {version = "^5.10.1", optional = true}
 
 [tool.poetry.dev-dependencies]
 pytest = "^7.0.1"
 pytest-asyncio = "^0.18.2"
-pre-commit = "^2.17.0"
-black = "^22.1.0"
-isort = "^5.10.1"
 
 [tool.poetry.extras]
-async = [
-    "aiohttp",
-    "aiofiles"
+dev = [
+    "pre-commit",
+    "black",
+    "isort"
 ]
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
 
+# entry-points
+[tool.poetry.scripts]
+gh-assets = "updater.github:main"
 
 # customize begin
 [tool.pytest.ini_options]

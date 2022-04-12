@@ -1,1 +1,1 @@
-VERSION = "0.2.2"
+"""assetsupdater check and update assets from network."""

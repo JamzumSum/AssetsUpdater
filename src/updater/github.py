@@ -1,51 +1,15 @@
-from dataclasses import dataclass
-from typing import Optional, Union
+from typing import Optional
 
-import requests
-from requests.exceptions import HTTPError
+from aiohttp import ClientError
+from aiohttp import ClientSession as Session
+from aiohttp.typedefs import StrOrURL
+from yarl import URL
 
 from updater.type import Asset
 from updater.type import Release
 from updater.type import Updater
-from updater.type import Url
 
-PROXY = None
 RELEASE_LIMIT = 65536
-
-
-@dataclass(frozen=True)
-class Repo:
-    user: str
-    repo: str
-
-
-def register_proxy(proxy: str, auth: Optional[dict] = None):
-    """Build up a https proxy dict of `request` format
-
-    Args:
-        proxy (str): proxy url, socks5 supoorted
-        auth (dict, optional): auth dict. Needs `username` and `password` field. Defaults to None.
-
-    Returns:
-        dict: `{'https': proxy_with_auth}`
-    """
-    global PROXY
-    if auth is None:
-        PROXY = {"https": proxy}
-        return PROXY.copy()
-
-    assert "username" in auth
-    assert "password" in auth
-    from urllib.parse import urlsplit
-
-    p = urlsplit(proxy)
-    assert p.hostname
-    url = f"{p.scheme}://{auth['username']}:{auth['password']}@{p.hostname}"
-    if p.port:
-        url += f":{p.port}"
-    PROXY = {"https": url}
-
-    return PROXY.copy()
 
 
 class GhRelease(Release):
@@ -69,55 +33,116 @@ class GhRelease(Release):
 
 
 class GhUpdater(Updater):
-    def __init__(self, repo: Union[Repo, Url]) -> None:
+    from os import environ as env
+
+    host = URL("https://api.github.com")
+    proxy: Optional[StrOrURL] = env.get("HTTPS_PROXY") or env.get("https_proxy")
+
+    def __init__(self, sess: Session, user: str, repo: str) -> None:
         super().__init__()
-        if isinstance(repo, Url):
-            import re
+        self.sess = sess
+        self.sess.headers["accept"] = "application/vnd.github.v3+json"
+        self._api = self.host / f"repos/{user}/{repo}/releases"
 
-            m = re.search(r"github.com/(?:repos/)?(\w+)/(\w+)", repo)
-            if not m:
-                raise ValueError("Cannot parse " + repo)
-            repo = Repo(user=m.group(1), repo=m.group(2))
+    async def all_iter(self, num=None, pre=False):
+        num = num or RELEASE_LIMIT
 
-        if not isinstance(repo, Repo):
-            raise TypeError(repo)
-
-        self.url = f"https://api.github.com/repos/{repo.user}/{repo.repo}/releases"
-
-    def all_iter(self, num=None, pre=False):
-        header = {
-            "accept": "application/vnd.github.v3+json",
-        }
-        if num is None:
-            num = RELEASE_LIMIT
         for i in range(0, num, 100):
             query = {
                 "per_page": min(100, num - i),
-                "page": int(i // 100) + 1,
+                "page": int(i / 100) + 1,
             }
-            r = requests.get(self.url, params=query, headers=header, proxies=PROXY)
-            if r.status_code != 200:
-                raise HTTPError(response=r)
+            async with self.sess.get(self._api, params=query, proxy=self.proxy) as r:
+                r.raise_for_status()
+                r = await r.json()
 
-            r = r.json()
             wo_draft = (GhRelease(i) for i in r if not i["draft"])
-            if pre:
-                yield from wo_draft
-            yield from filter(lambda i: not i.pre, wo_draft)
+            yield_from = wo_draft
+            if not pre:
+                yield_from = filter(lambda i: not i.pre, wo_draft)
+            for i in yield_from:
+                yield i
 
             if len(r) < query["per_page"]:
                 break
 
-    def latest(self, pre=False) -> Optional[Release]:
+    async def latest(self, pre=False) -> Optional[Release]:
         if pre:
-            return self.all(1, pre=True)[0]
-        header = {
-            "accept": "application/vnd.github.v3+json",
-        }
-        r = requests.get(self.url + "/latest", headers=header, proxies=PROXY)
-        if r.status_code != 200:
-            raise HTTPError(response=r)
-        r = r.json()
+            return (await self.all(1, pre=True))[0]
+        async with self.sess.get(self._api / "latest", proxy=self.proxy) as r:
+            r.raise_for_status()
+            r = await r.json()
         if not r:
             return
         return GhRelease(r)
+
+
+async def demo(user: str, repo: str, *, proxy: Optional[str], spec: str = "", num: int = 10):
+    from sys import stderr as STDERR
+
+    from .utils import version_filter
+
+    def choose(ls: list, prompt: str, default: int = 0):
+        for i, r in enumerate(ls):
+            print(f"{i}.", repr(r))
+        c = ""
+        try:
+            c = input(f"{prompt} [{default}]: ") or default
+            c = int(c)
+            if not (0 <= c < len(ls)):
+                print("wrong input range, exit", file=STDERR)
+                return
+            return c
+        except KeyboardInterrupt:
+            return
+        except ValueError:
+            print(f"wrong input: {c}, exit", file=STDERR)
+
+    async with Session() as sess:
+        up = GhUpdater(sess, user, repo)
+        if proxy:
+            up.proxy = proxy
+
+        try:
+            l = version_filter(up, spec, num)
+        except ClientError as e:
+            print(str(e), file=STDERR)
+            print("You may set an proxy using '-p' or '--proxy'.")
+            return
+
+        l = [i async for i in l]
+
+    c = choose(l, "Choose a release")
+    if c is None:
+        return
+
+    print("#", l[c].title)
+    l = l[c].assets()
+    c = choose(l, "Choose an asset")
+    if c is None:
+        return
+
+    from .download import download
+
+    print(await download(l[c].download_url))
+
+
+def main():
+    import argparse
+    import asyncio
+
+    psr = argparse.ArgumentParser()
+    psr.add_argument("user", help="GiHub user name")
+    psr.add_argument("repo", help="GitHub repo name")
+    psr.add_argument(
+        "--proxy", "-p", help="HTTPS_PROXY is read automatically, or you may override it here."
+    )
+    psr.add_argument("--spec", "-s", default="", help="such as '>=1.0' or '~=1.11'")
+
+    arg = psr.parse_args()
+    coro = demo(arg.user, arg.repo, spec=arg.spec, proxy=arg.proxy)
+    asyncio.run(coro)
+
+
+if __name__ == "__main__":
+    main()

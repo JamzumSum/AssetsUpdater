@@ -19,50 +19,42 @@ For supporting async-download:
 pip install AssetsUpdater[async]@https://github.com/JamzumSum/AssetsUpdater.git
 ~~~
 
-## Examples
+## Example and Demo
 
-### Download Latest Assets
+Run `gh-assets` after installing this package.
 
-~~~ python
-> from updater.github import GhUpdater, Repo
-> up = GhUpdater(Repo(user, reponame))
-> url = get_latest_asset(up, 'query.db', pre=False)
-> url
-'https://github.com/..../query.db'
+``` shell
+$ gh-assets JamzumSum QzEmoji
+0. <0.3> 0.3
+1. <0.2> 0.2
+2. <0.1.2> 0.1.2
+Choose a release [0]:
+# 0.3
+0. emoji.db
+1. QzEmoji-0.3-py3-none-any.whl
+2. QzEmoji-0.3.tar.gz
+Choose an asset [0]:
+32768
+```
 
-> from updater.download import download
-> progress = download(url, 'data/query.db') # progress is an iterator specifying download size
-> list(progress)    # drop any result(download size)
-~~~
+``` shell
+$ gh-assets -h
+usage: gh-assets [-h] [--proxy PROXY] [--spec SPEC] user repo
 
-*NOTE*: For async download, use `download.adownload`.
+positional arguments:
+  user                  GiHub user name
+  repo                  GitHub repo name
 
-### Filter Tags using Regex
+optional arguments:
+  -h, --help            show this help message and exit
+  --proxy PROXY, -p PROXY
+                        HTTPS_PROXY is read automatically, or you may override
+                        it here.
+  --spec SPEC, -s SPEC  such as '>=1.0' or '~=1.11'
+```
 
-~~~ python
-> from updater.utils import tag_filter
-> from updater.github import GhUpdater, Repo
-> up = GhUpdater(Repo(user, reponame))
-  # include pre-release; limited to the first 3 results
-> relist = tag_filter(up, r"[\d\.]+b\d+.*", num=3, pre=True)
-> list(relist)
-  # 3 release object which has human-friendly __repr__
-[<0.1.2> 0.1.2, <0.1.1> 0.1.1.dev1, <0.1.0> 0.1.0.dev1]
-~~~
+You may find examples at `src/updater/github.py` or `test/test_*.py`.
 
-> You can filter by release name as well. If regex is not enough, iterate on releases and filter by yourself is certainly supported.
-
-### Filter with Version
-
-~~~ python
-> from updater.utils import version_filter
-> from updater.github import GhUpdater, Repo
-> up = GhUpdater(Repo(user, reponame))
-  # try to parse version from release title; skip instead of raise InvalidVersion if a tag doesn't confirm PEP440
-> relist = version_filter(up, '>=0.0.1', num=3, pre=True, try_title=True, skip_legacy=True)
-> list(relist)
-[<0.1.2> 0.1.2, <0.1.1> 0.1.1.dev1, <0.1.0> 0.1.0.dev1]
-~~~
 
 ## Licence
 
