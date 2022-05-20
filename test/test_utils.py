@@ -1,8 +1,7 @@
 import pytest
 
 from updater.github import GhUpdater
-from updater.utils import get_latest_asset
-from updater.utils import version_filter
+from updater.utils import get_latest_asset, version_filter
 
 pytestmark = pytest.mark.asyncio
 

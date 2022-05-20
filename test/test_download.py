@@ -3,9 +3,9 @@ from pathlib import Path
 import pytest
 import pytest_asyncio
 
+import updater.utils as updater
 from updater.download import download
 from updater.github import GhUpdater
-import updater.utils as updater
 
 pytestmark = pytest.mark.asyncio
 

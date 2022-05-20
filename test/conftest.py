@@ -1,8 +1,8 @@
 import asyncio
 
-from aiohttp import ClientSession
 import pytest
 import pytest_asyncio
+from aiohttp import ClientSession
 
 from updater.github import GhUpdater
 

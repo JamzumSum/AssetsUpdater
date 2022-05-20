@@ -21,39 +21,7 @@ pip install AssetsUpdater[async]@https://github.com/JamzumSum/AssetsUpdater.git
 
 ## Example and Demo
 
-Run `gh-assets` after installing this package.
-
-``` shell
-$ gh-assets JamzumSum QzEmoji
-0. <0.3> 0.3
-1. <0.2> 0.2
-2. <0.1.2> 0.1.2
-Choose a release [0]:
-# 0.3
-0. emoji.db
-1. QzEmoji-0.3-py3-none-any.whl
-2. QzEmoji-0.3.tar.gz
-Choose an asset [0]:
-32768
-```
-
-``` shell
-$ gh-assets -h
-usage: gh-assets [-h] [--proxy PROXY] [--spec SPEC] user repo
-
-positional arguments:
-  user                  GiHub user name
-  repo                  GitHub repo name
-
-optional arguments:
-  -h, --help            show this help message and exit
-  --proxy PROXY, -p PROXY
-                        HTTPS_PROXY is read automatically, or you may override
-                        it here.
-  --spec SPEC, -s SPEC  such as '>=1.0' or '~=1.11'
-```
-
-You may find examples at `src/updater/github.py` or `test/test_*.py`.
+TODO
 
 
 ## Licence

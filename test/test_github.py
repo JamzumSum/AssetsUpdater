@@ -1,4 +1,5 @@
 import pytest
+from aiohttp import ClientSession
 
 from updater.github import GhUpdater
 
@@ -27,3 +28,11 @@ async def test_asset(up: GhUpdater):
 async def test_all(up: GhUpdater):
     r = await up.all(None, True)
     assert r
+
+
+async def test_not_exist(sess: ClientSession):
+    from updater.exc import ReleaseNotFound
+
+    up = GhUpdater(sess, "JamzumSum", "abab")
+    with pytest.raises(ReleaseNotFound):
+        await up.latest(True)
