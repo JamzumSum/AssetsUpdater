@@ -3,7 +3,7 @@ __pycache__
 .vscode
 .pylintrc
 .venv
-yapf_style.cfg
+poetry.toml
 
 # temporary files
 /tmp
@@ -13,7 +13,6 @@ yapf_style.cfg
 /build
 /dist
 *.egg-info
-poetry.lock
 
 # private data
 /.env
