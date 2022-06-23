@@ -2,12 +2,11 @@ import asyncio
 import logging
 from os import PathLike
 from pathlib import Path
-from typing import Awaitable, Callable, Optional, Union
+from typing import Awaitable, Callable, Optional
 
 import aiofiles
 from httpx import URL, AsyncClient
-
-StrOrURL = Union[URL, str]
+from httpx._types import ProxiesTypes, URLTypes
 
 log = logging.getLogger(__name__)
 
@@ -15,11 +14,11 @@ __all__ = ["download"]
 
 
 async def download(
-    url: StrOrURL,
+    url: URLTypes,
     local: Optional[PathLike] = None,
     buffer: int = 32768,
     echo_progress: Optional[Callable[..., Awaitable]] = None,
-    **get_kw,
+    proxy: ProxiesTypes = ...,
 ):
     """async-download a url to a the given path.
 
@@ -42,9 +41,15 @@ async def download(
     if local.exists():
         log.warning(f"{local.as_posix()} exists. Overwrite.")
 
+    client_dict = {}
+    if proxy != ...:
+        client_dict["proxies"] = proxy
+
     acc = 0
-    async with AsyncClient() as client, aiofiles.open(local, "wb") as f:
-        r = await client.get(url, **get_kw)
+    async with AsyncClient(**client_dict) as client, aiofiles.open(local, "wb") as f:
+        r = await client.get(url, follow_redirects=True)
+        r.raise_for_status()
+
         size = int(r.headers.get("Content-Length", -1))
         it = r.aiter_bytes(chunk_size=buffer)
 
