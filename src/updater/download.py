@@ -2,12 +2,12 @@ import asyncio
 import logging
 from os import PathLike
 from pathlib import Path
-from typing import Awaitable, Callable, Optional
+from typing import Awaitable, Callable, Optional, Union
 
 import aiofiles
-import aiohttp
-from aiohttp.typedefs import StrOrURL
-from yarl import URL
+from httpx import URL, AsyncClient
+
+StrOrURL = Union[URL, str]
 
 log = logging.getLogger(__name__)
 
@@ -29,11 +29,12 @@ async def download(
     :return: size
     """
     url = url if isinstance(url, URL) else URL(url)
-    local = Path(local or url.name)
+    remote_name = Path(url.path).name
+    local = Path(local or remote_name)
     local.parent.mkdir(parents=True, exist_ok=True)
 
     if local.is_dir():
-        local = local / url.name
+        local = local / remote_name
         log.info(f"Changing local path from {local.parent.as_posix()} to {local.as_posix()}")
         if local.is_dir():
             raise FileExistsError(local)
@@ -42,11 +43,10 @@ async def download(
         log.warning(f"{local.as_posix()} exists. Overwrite.")
 
     acc = 0
-    async with aiohttp.ClientSession() as sess, aiofiles.open(local, "wb") as f, sess.get(
-        url, **get_kw
-    ) as r:
+    async with AsyncClient() as client, aiofiles.open(local, "wb") as f:
+        r = await client.get(url, **get_kw)
         size = int(r.headers.get("Content-Length", -1))
-        it = r.content.iter_chunked(buffer)
+        it = r.aiter_bytes(chunk_size=buffer)
 
         log.info(f"Starting download task {url} -> {local}")
         log.debug(f"File size: {size}")

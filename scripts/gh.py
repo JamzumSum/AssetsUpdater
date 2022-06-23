@@ -3,7 +3,7 @@ import asyncio
 from pathlib import Path
 from typing import Optional
 
-from aiohttp import ClientSession as Session
+from httpx import AsyncClient
 from rich import print
 from rich.console import Console
 from rich.progress import (
@@ -26,9 +26,13 @@ console = Console()
 
 def lookup(args: argparse.Namespace) -> Optional[Asset]:
     async def inner():
-        async with Session() as sess:
-            up = GhUpdater(sess, args.user, args.repo, args.num)
-            up.proxy = args.proxy = args.proxy or up.proxy
+        if args.proxy:
+            client_dict = dict(proxies=args.proxy)
+        else:
+            client_dict = {}
+
+        async with AsyncClient(**client_dict) as client:
+            up = GhUpdater(client, args.user, args.repo, args.num)
             if args.spec:
                 it = version_filter(up, args.spec, args.num, args.pre)
             else:

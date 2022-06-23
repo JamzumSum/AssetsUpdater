@@ -2,7 +2,7 @@ import asyncio
 
 import pytest
 import pytest_asyncio
-from aiohttp import ClientSession
+from httpx import AsyncClient
 
 from updater.github import GhUpdater
 
@@ -15,11 +15,11 @@ def event_loop():
 
 
 @pytest_asyncio.fixture(scope="module")
-async def sess():
-    async with ClientSession() as sess:
-        yield sess
+async def client():
+    async with AsyncClient() as client:
+        yield client
 
 
 @pytest.fixture(scope="module")
-def up(sess):
-    return GhUpdater(sess, "JamzumSum", "QzEmoji")
+def up(client: AsyncClient):
+    return GhUpdater(client, "aioqzone", "QzEmoji")

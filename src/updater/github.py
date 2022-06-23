@@ -1,8 +1,8 @@
-from typing import Optional
+from typing import Optional, Union
 
-from aiohttp import ClientSession as Session
-from aiohttp.typedefs import StrOrURL
-from yarl import URL
+from httpx import URL, AsyncClient
+
+StrOrURL = Union[URL, str]
 
 from updater.type import Asset, Release, Updater
 
@@ -32,23 +32,21 @@ class GhRelease(Release):
 
 
 class GhUpdater(Updater):
-    from os import environ as env
-
     host = URL("https://api.github.com")
-    proxy: Optional[StrOrURL] = env.get("HTTPS_PROXY") or env.get("https_proxy")
 
-    def __init__(self, sess: Session, user: str, repo: str, pagesize: int = 100) -> None:
+    def __init__(self, client: AsyncClient, user: str, repo: str, pagesize: int = 100) -> None:
         super().__init__()
         self.usr = user
         self.repo = repo
-        self.sess = sess
-        self.sess.headers["accept"] = "application/vnd.github.v3+json"
-
         self.pagesize = pagesize
+
+        client.base_url = self.host
+        client.headers["accept"] = "application/vnd.github.v3+json"
+        self.client = client
 
     @property
     def _api(self):
-        return self.host / f"repos/{self.usr}/{self.repo}/releases"
+        return self.host.copy_with(path=f"/repos/{self.usr}/{self.repo}/releases")
 
     async def all_iter(
         self,
@@ -65,10 +63,10 @@ class GhUpdater(Updater):
                 "per_page": min(pagesize, num - i),
                 "page": int(i / pagesize) + 1,
             }
-            async with self.sess.get(self._api, params=query, proxy=self.proxy) as r:
-                if not r.ok:
-                    raise ReleaseNotFound(f"{self.usr}/{self.repo}", r.reason)
-                r = await r.json()
+            r = await self.client.get(self._api, params=query)
+            if not r.is_success:
+                raise ReleaseNotFound(f"{self.usr}/{self.repo}", r.reason_phrase)
+            r = r.json()
 
             if isinstance(r, dict):
                 raise ReleaseNotFound(f"{self.usr}/{self.repo}", r["message"])
@@ -86,10 +84,10 @@ class GhUpdater(Updater):
     async def latest(self, pre=False) -> Optional[Release]:
         if pre:
             return await self.all_iter(1, pre=True, pagesize=1).__anext__()
-        async with self.sess.get(self._api / "latest", proxy=self.proxy) as r:
-            if not r.ok:
-                raise ReleaseNotFound(f"{self.usr}/{self.repo}", r.reason)
-            r = await r.json()
+        r = await self.client.get(self._api.join(self._api.path + "/latest"))
+        if not r.is_success:
+            raise ReleaseNotFound(f"{self.usr}/{self.repo}", r.reason_phrase)
+        r = r.json()
         if not r:
             return
         return GhRelease(r)

@@ -1,5 +1,5 @@
 import pytest
-from aiohttp import ClientSession
+from httpx import AsyncClient
 
 from updater.github import GhUpdater
 
@@ -30,9 +30,9 @@ async def test_all(up: GhUpdater):
     assert r
 
 
-async def test_not_exist(sess: ClientSession):
+async def test_not_exist(client: AsyncClient):
     from updater.exc import ReleaseNotFound
 
-    up = GhUpdater(sess, "JamzumSum", "abab")
+    up = GhUpdater(client, "JamzumSum", "abab")
     with pytest.raises(ReleaseNotFound):
         await up.latest(True)
