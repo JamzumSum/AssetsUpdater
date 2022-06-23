@@ -26,4 +26,4 @@ async def url(up: GhUpdater):
 
 
 async def test_download(url: str, local: Path):
-    await download(url, local)
+    assert await download(url, local)

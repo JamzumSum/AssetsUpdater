@@ -19,10 +19,9 @@ async def test_asset(up: GhUpdater):
     a = r.assets()
     assert a
     f = list(filter(lambda i: i.name == "emoji.db", a))
-    assert len(f) == 1
-    a = f[0]
-    del f
-    assert a.download_url
+    if len(f) == 1:
+        a = f[0]
+        assert a.download_url
 
 
 async def test_all(up: GhUpdater):
