@@ -7,12 +7,13 @@ on:
   push:
 
 jobs:
-  install-test:
+  test:
     runs-on: ubuntu-latest
     strategy:
       matrix:
         python-version: ["3.10", "3.7"]
-
+    outputs:
+      package-version: ${{ steps.test.outputs.package }}
     steps:
       #----------------------------------------------
       #       check-out repo and set-up python
@@ -30,11 +31,46 @@ jobs:
       #----------------------------------------------
       - name: Install library
         run: |
-          poetry env use ${{ matrix.python-version }}
-          poetry install --no-interaction -vv
+          poetry install -n -vv
       #----------------------------------------------
       #    add matrix specifics and run test suite
       #----------------------------------------------
       - name: Test with pytest
+        id: test
         run: |
           poetry run pytest test
+          echo "::set-output name=package::$(poetry version -s)"
+
+  merge:
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: release
+
+      - name: Get release SHA
+        id: sha
+        run: echo "::set-output name=sha::$(git rev-parse --short HEAD)"
+
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ github.ref }}
+          fetch-depth: 0
+      - name: Generate a changelog
+        uses: orhun/git-cliff-action@v1
+        id: git-cliff
+        with:
+          config: cliff.toml
+          args: -t ${{ needs.test.outputs.package-version }} ${{ steps.sha.outputs.sha }}..HEAD
+        env:
+          OUTPUT: CHANGELOG.md
+
+      - name: Create Pull Request
+        uses: repo-sync/pull-request@v2
+        if: "!contains(github.event.head_commit.message, '@no-pr')"
+        with:
+          destination_branch: release
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          pr_title: ${{ needs.test.outputs.package-version }}
+          pr_template: CHANGELOG.md
