@@ -8,9 +8,8 @@ on:
     types:
       - closed
     branches:
-      - "beta"
-      # - "release"
-      # - "release/**"
+      - "release"
+      - "release/**"
 
 jobs:
   build:
