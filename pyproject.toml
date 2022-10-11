@@ -20,7 +20,7 @@ socksio = { git = "https://github.com/JamzumSum/socksio.git", rev = "master" }
 aiofiles = "^22.1.0"
 # extras: dev
 pre-commit = { version = "^2.17.0", optional = true }
-black = { version = "^22.1.0", optional = true }
+black = { version = "^22.10.0", optional = true }
 isort = { version = "^5.10.1", optional = true }
 # extras: tui
 rich = { version = "^12.6.0", optional = true }
