@@ -8,6 +8,10 @@ on:
     branches:
       - dev
       - dev/**
+    paths:
+      - src/**
+      - poetry.lock
+      - .github/workflows/ci.yml
 
 jobs:
   test:
