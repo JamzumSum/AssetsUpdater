@@ -3,7 +3,7 @@
 Update assets from network. This repo is a component of [QzEmoji][qzemoji].
 
 [![python](https://img.shields.io/badge/python-%E2%89%A53.7%2C%3C4.0-blue)][homepage]
-[![Test](https://github.com/JamzumSum/AssetsUpdater/actions/workflows/test.yml/badge.svg)](https://github.com/JamzumSum/AssetsUpdater/actions/workflows/test.yml)
+[![Test](https://github.com/JamzumSum/AssetsUpdater/actions/workflows/ci.yml/badge.svg)](https://github.com/JamzumSum/AssetsUpdater/actions/workflows/ci.yml)
 [![Release](https://img.shields.io/github/v/release/JamzumSum/AssetsUpdater?include_prereleases&logo=github)](https://github.com/JamzumSum/AssetsUpdater/releases)
 
 
