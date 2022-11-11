@@ -13,10 +13,10 @@ Update assets from network. This repo is a component of [QzEmoji][qzemoji].
 pip install AssetsUpdater@https://github.com/JamzumSum/AssetsUpdater.git
 ~~~
 
-For supporting async-download:
+For a simple terminal ui:
 
 ~~~ shell
-pip install AssetsUpdater[async]@https://github.com/JamzumSum/AssetsUpdater.git
+pip install AssetsUpdater[tui]@https://github.com/JamzumSum/AssetsUpdater.git
 ~~~
 
 ## Example and Demo
