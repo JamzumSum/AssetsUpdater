@@ -7,12 +7,16 @@ Pred = Callable[["Release"], bool]
 
 @dataclass(frozen=True)
 class Asset:
-    from_tag: str
+    from_release: "Release"
     name: str
     download_url: str
 
     def __repr__(self) -> str:
         return self.name
+
+    @property
+    def from_tag(self) -> str:
+        return self.from_release.tag
 
 
 class Release(ABC):

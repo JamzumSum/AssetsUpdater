@@ -20,7 +20,7 @@ class GhRelease(Release):
         return self.raw["prerelease"]
 
     def assets(self):
-        return [Asset(self.tag, i["name"], i["browser_download_url"]) for i in self.raw["assets"]]
+        return [Asset(self, i["name"], i["browser_download_url"]) for i in self.raw["assets"]]
 
     @property
     def title(self) -> str:
