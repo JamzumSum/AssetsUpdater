@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Optional, Union
 
 from httpx import URL, AsyncClient
@@ -28,7 +29,19 @@ class GhRelease(Release):
 
     @property
     def tag(self) -> str:
-        return self.raw.get("tag_name", None)
+        return self.raw.get("tag_name", "")
+
+    @property
+    def body(self) -> str:
+        return self.raw.get("body", "")
+
+    @property
+    def draft(self) -> bool:
+        return self.raw["draft"]
+
+    @property
+    def id(self) -> int:
+        return self.raw["id"]
 
 
 class GhUpdater(Updater):
