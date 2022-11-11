@@ -9,8 +9,11 @@ pytestmark = pytest.mark.asyncio
 async def test_latest(up: GhUpdater):
     r = await up.latest()
     assert r
-    assert r.tag
-    assert r.title
+    assert isinstance(r.tag, str)
+    assert isinstance(r.title, str)
+    assert isinstance(r.body, str)
+    assert isinstance(r.pre, bool)
+    assert r.draft is False
 
 
 async def test_asset(up: GhUpdater):
@@ -21,7 +24,8 @@ async def test_asset(up: GhUpdater):
     f = list(filter(lambda i: i.name == "emoji.db", a))
     if len(f) == 1:
         a = f[0]
-        assert a.download_url
+        assert isinstance(a.download_url, str)
+        assert a.from_release is r
 
 
 async def test_all(up: GhUpdater):

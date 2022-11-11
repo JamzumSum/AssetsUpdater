@@ -1,4 +1,4 @@
-from abc import ABC, abstractmethod, abstractproperty
+from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import AsyncGenerator, Callable, List, Optional
 
@@ -20,11 +20,13 @@ class Asset:
 
 
 class Release(ABC):
-    @abstractproperty
+    @property
+    @abstractmethod
     def tag(self) -> str:
         return ""
 
-    @abstractproperty
+    @property
+    @abstractmethod
     def title(self) -> str:
         return ""
 
@@ -32,9 +34,20 @@ class Release(ABC):
     def assets(self) -> List[Asset]:
         return []
 
-    @abstractproperty
+    @property
+    @abstractmethod
     def pre(self) -> bool:
         return False
+
+    @property
+    @abstractmethod
+    def draft(self) -> bool:
+        return False
+
+    @property
+    @abstractmethod
+    def body(self) -> str:
+        return ""
 
     def has_asset(self, name: str):
         for i in self.assets():
