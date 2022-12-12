@@ -14,7 +14,7 @@ packages = [{ include = "updater", from = "src" }]
 
 [tool.poetry.dependencies]
 python = ">=3.7,<4.0"
-packaging = "^21.3"
+packaging = "^22.0"
 httpx = "~0.23.0"
 socksio = { git = "https://github.com/JamzumSum/socksio.git", rev = "master" }
 aiofiles = "^22.1.0"
