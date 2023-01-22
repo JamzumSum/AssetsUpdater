@@ -1,7 +1,7 @@
 # This workflow will install Python dependencies, run tests and lint with a single version of Python
 # For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
 
-name: Test
+name: Auto CI
 
 on:
   push:
@@ -12,66 +12,28 @@ on:
       - src/**
       - poetry.lock
       - .github/workflows/ci.yml
+      - .github/workflows/test.yml
 
 jobs:
   test:
-    runs-on: ubuntu-latest
-    if: "!contains(github.event.head_commit.message, '@no-test')"
-    strategy:
-      matrix:
-        python-version: ["3.10", "3.7"]
-    outputs:
-      package-version: ${{ steps.test.outputs.package }}
-    steps:
-      #----------------------------------------------
-      #       check-out repo and set-up python
-      #----------------------------------------------
-      - uses: actions/checkout@v3
-      - name: Install Poetry
-        run: pipx install poetry
-      - name: Setup Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v4
-        with:
-          python-version: ${{ matrix.python-version }}
-          cache: poetry
-      #----------------------------------------------
-      #   install your root project, if required
-      #----------------------------------------------
-      - name: Install library
-        run: |
-          poetry install -n -vv
-      #----------------------------------------------
-      #    add matrix specifics and run test suite
-      #----------------------------------------------
-      - name: Test with pytest
-        id: test
-        run: |
-          poetry run pytest test
-          echo "::set-output name=package::$(poetry version -s)"
+    uses: ./.github/workflows/test.yml
 
   merge:
     runs-on: ubuntu-latest
     if: "!contains(github.event.head_commit.message, '@no-pr')"
     needs: test
+    env:
+      TARGET: release
     steps:
       - uses: actions/checkout@v3
         with:
-          ref: release
-
-      - name: Get release SHA
-        id: sha
-        run: echo "::set-output name=sha::$(git rev-parse --short HEAD)"
-
-      - uses: actions/checkout@v3
-        with:
-          ref: ${{ github.ref }}
           fetch-depth: 0
       - name: Generate a changelog
-        uses: orhun/git-cliff-action@v1
+        uses: orhun/git-cliff-action@v2
         id: git-cliff
         with:
           config: cliff.toml
-          args: -t ${{ needs.test.outputs.package-version }} ${{ steps.sha.outputs.sha }}..HEAD
+          args: -t ${{ needs.test.outputs.package-version }} ${TARGET}..HEAD
         env:
           OUTPUT: CHANGELOG.md
 
