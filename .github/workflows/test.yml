@@ -1,0 +1,43 @@
+name: Test
+
+on:
+  workflow_call:
+  pull_request:
+    branches:
+      - dependabot/pip/**
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    if: "!contains(github.event.head_commit.message, '@no-test')"
+    strategy:
+      matrix:
+        python-version: ["3.11", "3.7"]
+    outputs:
+      package-version: ${{ steps.test.outputs.package }}
+    steps:
+      #----------------------------------------------
+      #       check-out repo and set-up python
+      #----------------------------------------------
+      - uses: actions/checkout@v3
+      - name: Install Poetry
+        run: pipx install poetry
+      - name: Setup Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: poetry
+      #----------------------------------------------
+      #   install your root project, if required
+      #----------------------------------------------
+      - name: Install library
+        run: |
+          poetry install -n -vv
+      #----------------------------------------------
+      #    add matrix specifics and run test suite
+      #----------------------------------------------
+      - name: Test with pytest
+        id: test
+        run: |
+          poetry run pytest test
+          echo "package=$(poetry version -s)" >> $GITHUB_OUTPUT
