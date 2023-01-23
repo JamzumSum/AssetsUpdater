@@ -33,7 +33,7 @@ jobs:
         id: git-cliff
         with:
           config: cliff.toml
-          args: -t ${{ needs.test.outputs.package-version }} ${TARGET}..HEAD
+          args: -t ${{ needs.test.outputs.package-version }} ${{ env.TARGET }}..HEAD
         env:
           OUTPUT: CHANGELOG.md
 
