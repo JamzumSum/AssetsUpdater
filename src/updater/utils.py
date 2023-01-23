@@ -60,16 +60,20 @@ async def version_filter(
 
     def pred(r: Release):
         if try_title and r.title:
-            v = parse(r.title)
-            if isinstance(v, Version):
-                return v in spec
+            try:
+                return parse(r.title) in spec
+            except InvalidVersion:
+                pass
 
         if r.tag:
-            v = parse(r.tag)
-            if isinstance(v, Version):
-                return v in spec
-        if not skip_legacy:
-            raise InvalidVersion(r.tag)
+            try:
+                return parse(r.tag) in spec
+            except InvalidVersion:
+                if skip_legacy:
+                    return False
+                raise
+
+        return False
 
     i = 0
     async for r in updater.all_iter(None, pre=pre, start=start, **kwds):
