@@ -12,8 +12,12 @@ on:
       - "release/**"
 
 jobs:
-  build:
+  build-upload:
     runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+    outputs:
+      urls: ${{ steps.upload.outputs.urls }}
     steps:
       #----------------------------------------------
       #       check-out repo and set-up python
@@ -28,14 +32,49 @@ jobs:
       #----------------------------------------------
       #  --------    Build and release   ---------
       #----------------------------------------------
-      - name: Build dist
+      - name: Build and Release
         id: build
+        env:
+          body: ${{ github.event.pull_request.body }}
         run: |
-          echo "::set-output name=version::$(poetry version -s)"
+          version=$(poetry version -s)
+          echo "version=$version" >> $GITHUB_OUTPUT
+
           poetry build
-      - uses: softprops/action-gh-release@v1
-        with:
-          files: dist/*
-          tag_name: ${{ steps.build.outputs.version }}
-          name: ${{ steps.build.outputs.version }}
-          generate_release_notes: true
+          gh release create $version $(ls dist) -t "$version" --notes "${body}"
+
+      - name: Build Hash Fragments
+        id: upload
+        run: |
+          files=$(ls dist)
+
+          sharp_list="#"
+          for file in $files; do
+              sharp_list="$sharp_list$(basename $file)#"
+          done
+
+          filter=".assets[] | select( \"#\" + .name + \"#\" | inside(\"$sharp_list\") ) | .url"
+          urls=$(gh release -R ${{ inputs.repo }} view ${{ inputs.tag }} --json assets -q "$filter")
+
+          hash_urls=""
+          for url in $urls; do
+              for file in $files; do
+                  if [ $(basename $url) = $(basename $file) ]; then
+                      hash=$(sha256sum $file)
+                      hash=(${hash// / }[0])
+                      url="$url#sha256=$hash"
+                      echo $url
+                      hash_urls="$hash_urls$url "
+                  fi
+              done
+          done
+          echo "urls=$hash_urls" >> $GITHUB_OUTPUT
+
+  index:
+    uses: aioqzone/gh-simple-index/.github/workflows/add.yml@master
+    with:
+      project: AssetsUpdater
+      urls: ${{ needs.build-upload.outputs.urls }}
+      repo: aioqzone/aioqzone-index
+    # secrets:
+    #   REPO_TOKEN: ${{ secrets.PAT }}
