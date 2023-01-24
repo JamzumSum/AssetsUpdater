@@ -7,7 +7,7 @@ pytestmark = pytest.mark.asyncio
 
 
 async def test_latest_asset(up: GhUpdater):
-    url = await get_latest_asset(up, "emoji.db")
+    url = await get_latest_asset(up, r"emoji.*\.db")
     assert url.download_url
 
 

@@ -1,13 +1,13 @@
+from __future__ import annotations
+
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import AsyncGenerator, Callable, List, Optional
 
-Pred = Callable[["Release"], bool]
-
 
 @dataclass(frozen=True)
 class Asset:
-    from_release: "Release"
+    from_release: Release
     name: str
     download_url: str
 
@@ -67,14 +67,20 @@ class Updater(ABC):
 
     @abstractmethod
     def all_iter(
-        self, num: Optional[int], pre: bool = False, start: int = 0, **kwds
+        self, num: Optional[int] = None, pre: bool = False, start: int = 0, **kwds
     ) -> AsyncGenerator[Release, None]:
         pass
 
     async def all(self, num: Optional[int], pre: bool = False) -> List[Release]:
         return [i async for i in self.all_iter(num, pre)]
 
-    async def filter(self, pred: Pred, pre: bool = False, start: int = 0, **kwds):
-        async for i in self.all_iter(None, pre, start, **kwds):
-            if pred(i):
-                yield i
+    async def filter_on_release(self, pred: Callable[[Release], bool], **kwds):
+        async for release in self.all_iter(**kwds):
+            if pred(release):
+                yield release
+
+    async def filter_on_asset(self, pred: Callable[[Asset], bool], **kwds):
+        async for release in self.all_iter(**kwds):
+            for asset in release.assets():
+                if pred(asset):
+                    yield asset
