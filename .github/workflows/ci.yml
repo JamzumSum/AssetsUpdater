@@ -33,7 +33,8 @@ jobs:
     if: "!contains(github.event.head_commit.message, '@no-pr')"
     needs: test
     env:
-      TARGET: release
+      GH_TOKEN: ${{ github.token }}
+      target: release
     steps:
       - uses: actions/checkout@v3
         with:
@@ -43,7 +44,7 @@ jobs:
         id: git-cliff
         with:
           config: cliff.toml
-          args: -t ${{ needs.test.outputs.package-version }} ${{ env.TARGET }}..HEAD
+          args: -t ${{ needs.test.outputs.package-version }} ${{ env.target }}..HEAD
         env:
           OUTPUT: CHANGELOG.md
 
