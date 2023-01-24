@@ -2,6 +2,8 @@ name: Test
 
 on:
   workflow_call:
+    outputs:
+      package-version: ${{ jobs.test.outputs.package-version }}
   pull_request:
     branches:
       - dependabot/pip/**
