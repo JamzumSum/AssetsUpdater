@@ -3,7 +3,9 @@ name: Test
 on:
   workflow_call:
     outputs:
-      package-version: ${{ jobs.test.outputs.package-version }}
+      package-version:
+        description: version of this python package output by poetry
+        value: ${{ jobs.test.outputs.package-version }}
   pull_request:
     branches:
       - dependabot/pip/**
