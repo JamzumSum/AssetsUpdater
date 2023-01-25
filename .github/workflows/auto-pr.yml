@@ -11,7 +11,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  target: beta
+  target: release
 
 jobs:
   pr:
