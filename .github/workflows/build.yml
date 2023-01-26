@@ -22,10 +22,9 @@ jobs:
     if: github.event_name == 'workflow_dispatch' || contains(github.event.pull_request.labels.*.name, 'python')
     env:
       GH_TOKEN: ${{ github.token }}
-    outputs:
-      urls: ${{ steps.upload.outputs.urls }}
+      index-repo: aioqzone/aioqzone-index
     permissions:
-      contents: write
+      contents: write # release needs write permission
     steps:
       - uses: actions/checkout@v3
       - name: Install poetry
@@ -50,16 +49,11 @@ jobs:
           tag: ${{ env.version }}
           files: dist/*
 
-  index:
-    needs: build-upload
-    uses: aioqzone/gh-simple-api/.github/workflows/add.yml@master
-    permissions:
-      contents: write
-      pages: write
-      id-token: write
-    with:
-      project: AssetsUpdater
-      urls: ${{ needs.build-upload.outputs.urls }}
-      repo: aioqzone/aioqzone-index
-    # secrets:
-    #   REPO_TOKEN: ${{ secrets.PAT }}
+      - name: Add to aioqzone-index
+        env:
+          urls: ${{ steps.upload.outputs.urls }}
+          GH_TOKEN: ${{ secrets.REPO_TOKEN }} # this is a fine-grained PAT
+        run: |
+          gh workflow -R ${{ env.index-repo }} run add.yml \
+                      -f project=AssetsUpdater \
+                      -f urls="$urls"
