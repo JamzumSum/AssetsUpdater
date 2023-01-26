@@ -48,7 +48,7 @@ jobs:
         uses: JamzumSum/actions/hash-release@master
         with:
           tag: ${{ env.version }}
-          files: dist
+          files: dist/*
 
   index:
     needs: build-upload
