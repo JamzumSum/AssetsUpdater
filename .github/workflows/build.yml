@@ -11,9 +11,17 @@ on:
       - "release"
       - "release/**"
 
+permissions:
+  contents: read
+
+concurrency:
+  group: build-${{ github.ref_name }}
+  cancel-in-progress: true
+
 jobs:
   build-upload:
     runs-on: ubuntu-latest
+    if: contains(github.event.pull_request.labels.*.name, 'python')
     env:
       GH_TOKEN: ${{ github.token }}
     outputs:
